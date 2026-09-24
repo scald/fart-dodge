@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Fart Dodge</title>
+<style>
+html,body{margin:0;height:100%;background:#1b1530;color:#fff;font-family:system-ui,sans-serif;overflow:hidden;touch-action:none}
+canvas{display:block;margin:0 auto;background:linear-gradient(#2c2255,#4a2f6b)}
+#ui{position:fixed;top:8px;left:0;right:0;text-align:center;font-size:20px;font-weight:bold;pointer-events:none}
+#msg{position:fixed;top:40%;left:0;right:0;text-align:center;font-size:24px;padding:0 20px}
+</style></head><body>
+<div id="ui">score: 0</div><div id="msg">💨 FART DODGE 💨<br><small>ben must dodge the beans.<br>drag or use arrow keys.<br>tap to start</small></div>
+<canvas id="c"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'),ui=document.getElementById('ui'),msg=document.getElementById('msg');
+let W,H;function rs(){W=c.width=Math.min(innerWidth,500);H=c.height=innerHeight}rs();addEventListener('resize',rs);
+let p,beans,score,best=+localStorage.fdBest||0,run=false,t,keys={},speed;
+function reset(){p={x:W/2,y:H-70};beans=[];score=0;t=0;speed=2;run=true;msg.style.display='none'}
+function start(){if(!run)reset()}
+addEventListener('keydown',e=>{keys[e.key]=1;if(e.key==' ')start()});addEventListener('keyup',e=>keys[e.key]=0);
+function mv(e){const r=c.getBoundingClientRect();const tt=e.touches?e.touches[0]:e;p&&(p.x=Math.max(20,Math.min(W-20,tt.clientX-r.left)))}
+c.addEventListener('touchstart',e=>{start();mv(e)});c.addEventListener('touchmove',e=>{mv(e);e.preventDefault()},{passive:false});
+c.addEventListener('mousedown',start);c.addEventListener('mousemove',e=>run&&mv(e));msg.addEventListener('click',start);msg.addEventListener('touchstart',start);
+function loop(){x.clearRect(0,0,W,H);if(run){t++;speed+=0.0015;
+if(keys.ArrowLeft)p.x-=7;if(keys.ArrowRight)p.x+=7;p.x=Math.max(20,Math.min(W-20,p.x));
+if(Math.random()<0.03+t/20000)beans.push({x:Math.random()*(W-30)+15,y:-20,v:speed+Math.random()*2});
+x.font='34px serif';x.textAlign='center';
+for(const b of beans){b.y+=b.v;x.fillText('🫘',b.x,b.y);if(Math.abs(b.x-p.x)<26&&Math.abs(b.y-p.y)<28){run=false;best=Math.max(best,score);localStorage.fdBest=best;
+msg.innerHTML='💥 BEAN HIT 💥<br>ben has been fueled.<br>score: '+score+'<br>best: '+best+'<br><small>tap to play again</small>';msg.style.display='block'}}
+beans=beans.filter(b=>{if(b.y>H+20){score++;return false}return true});
+x.font='44px serif';x.fillText('🧍',p.x,p.y+15);if(t%40<20){x.font='22px serif';x.fillText('💨',p.x-24,p.y+25)}
+ui.textContent='score: '+score+'   best: '+best}
+requestAnimationFrame(loop)}loop();
+</script></body></html>
